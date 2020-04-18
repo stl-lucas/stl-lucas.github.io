@@ -1,0 +1,55 @@
+body {
+    background-color: #ededed;
+    padding-bottom: 150px;
+}
+
+.navbar {
+    background-color: #ffffff;
+    color: #666666;
+}
+
+.navbar-brand {
+    font-size: 2em;
+}
+
+.navbar-light .navbar-brand {
+    color: #666666;
+}
+
+.navbar-toggler-icon {
+    color: #666666;
+}
+
+main {
+    padding-top: 40px;
+}
+
+h2 {
+    color: #0bada5;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-weight: bold;
+}
+
+a {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    color: #666666
+}
+
+a:hover, a:visited, a:active {
+    color: #666666
+}
+
+.card {
+    padding: 20px;
+    border-radius: 0;
+}
+
+.border {
+    border-color: #0bada5;
+    border-width: thick;
+}
+
+footer {
+    background-color: #666666;
+    color: #ffffff;
+}
