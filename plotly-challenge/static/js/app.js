@@ -90,3 +90,26 @@ d3.json("samples.json").then(function(bioData) {
   Plotly.newPlot('bubble', data, layout);
 
 }).catch(error => console.log(error));
+
+d3.selectAll("body").on("change", updatePage);
+
+function updatePage() {
+  var dropdownMenu = d3.selectAll("#selDataset").node();
+  id = dropdownMenu.value;
+  d3.json("samples.json").then(function(bioData) {
+  
+    var names = bioData.names.map(d => d);
+    var metadata = bioData.metadata.map(d => d);
+    var samples = bioData.samples.map(d => d);
+    
+    demographic = metadata[id];
+    demo_info = d3.select("#sample-metadata");
+    Object.keys(demographic).forEach(function(key) {
+      demo_info.append("div").text(`${key}: ${demographic[key]}`);
+    })
+
+    Plotly.restyle("bar", "x", [samples[id].otu_ids]);
+    Plotly.restyle("bar", "y", [samples[id].sample_values]);
+    Plotly.restyle("bar", "text", [samples[id].otu_labels]);
+  });
+}
