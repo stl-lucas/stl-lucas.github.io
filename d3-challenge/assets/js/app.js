@@ -153,24 +153,24 @@ function visualize(censusData) {
 
 	function xMinMax() {
 		// min 
-		xMin = d3.min(theData, function (d) {
+		xMin = d3.min(censusData, function (d) {
 			return parseFloat(d[curX]) * 0.90;
 		});
 
 		// max
-		xMax = d3.max(theData, function (d) {
+		xMax = d3.max(censusData, function (d) {
 			return parseFloat(d[curX]) * 1.10;
 		});
 	}
 
 	function yMinMax() {
 		// min
-		yMin = d3.min(theData, function (d) {
+		yMin = d3.min(censusData, function (d) {
 			return parseFloat(d[curY]) * 0.90;
 		});
 
 		// max
-		yMax = d3.max(theData, function (d) {
+		yMax = d3.max(censusData, function (d) {
 			return parseFloat(d[curY]) * 1.10;
 		});
 	}
@@ -224,7 +224,7 @@ function visualize(censusData) {
 		.attr("class", "yAxis")
 		.attr("transform", "translate(" + (margin + labelArea) + ", 0)");
 
-	var theCircles = svg.selectAll("g theCircles").data(theData).enter();
+	var theCircles = svg.selectAll("g theCircles").data(censusData).enter();
 
 	theCircles
 		.append("circle")
