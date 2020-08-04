@@ -1,104 +1,401 @@
-var svgWidth = 800;
-var svgHeight = 500;
-
-var margin = {
-top: 20,
-right: 40,
-bottom: 60,
-left: 60
-};
-
-var width = svgWidth - margin.left - margin.right;
-var height = svgHeight - margin.top - margin.bottom;
+// Set canvas size and spacing
+var width = parseInt(d3.select("#scatter").style("width"));
+var height = width - width / 3.9;
+var margin = 20;
+var labelArea = 110;
+var tPadBot = 40;
+var tPadLeft = 40;
 
 var svg = d3
-.select("#scatter")
-.append("svg")
-.attr("width", svgWidth)
-.attr("height", svgHeight);
+	.select("#scatter")
+	.append("svg")
+	.attr("width", width)
+	.attr("height", height)
+	.attr("class", "chart");
 
-var chartGroup = svg.append("g")
-.attr("transform", `translate(${margin.left}, ${margin.top})`);
+// Set the radius for each marker
+var circRadius;
 
+function crGet() {
+	if (width <= 530) {
+		circRadius = 5;
+	} else {
+		circRadius = 10;
+	}
+}
+crGet();
 
-d3.csv("assets/data/data.csv").then(function(censusData) {
-    console.log(censusData);
+// Create group for bottom axis
+svg.append("g").attr("class", "xText");
 
-    censusData.forEach(function(data) {
-        data.poverty = +data.poverty;
-        data.healthcare = +data.healthcare;
-    });
+var xText = d3.select(".xText");
 
-    var xLinearScale = d3.scaleLinear()
-        .domain(d3.extent(censusData, d => d.poverty))
-        .range([0, width]);
+function xTextRefresh() {
+	xText.attr(
+		"transform",
+		"translate(" +
+		((width - labelArea) / 2 + labelArea) +
+		", " +
+		(height - margin - tPadBot) +
+		")"
+	);
+}
+xTextRefresh();
 
-    var yLinearScale = d3.scaleLinear()
-        .domain(d3.extent(censusData, d => d.healthcare))
-        .range([height, 0]);
+// 1. Poverty
+xText
+	.append("text")
+	.attr("y", -26)
+	.attr("data-name", "poverty")
+	.attr("data-axis", "x")
+	.attr("class", "aText active x")
+	.text("In Poverty (%)");
+// 2. Age
+xText
+	.append("text")
+	.attr("y", 0)
+	.attr("data-name", "age")
+	.attr("data-axis", "x")
+	.attr("class", "aText inactive x")
+	.text("Age (Median)");
+// 3. Income
+xText
+	.append("text")
+	.attr("y", 26)
+	.attr("data-name", "income")
+	.attr("data-axis", "x")
+	.attr("class", "aText inactive x")
+	.text("Household Income (Median)");
 
-    var bottomAxis = d3.axisBottom(xLinearScale);
-    var leftAxis = d3.axisLeft(yLinearScale).ticks(12);
+// Create group for left axis
+var leftTextX = margin + tPadLeft;
+var leftTextY = (height + labelArea) / 2 - labelArea;
 
-    chartGroup.append("g")
-        .attr("transform", `translate(0, ${height})`)
-        .call(bottomAxis);
+svg.append("g").attr("class", "yText");
 
-    chartGroup.append("g")
-        .call(leftAxis);
+var yText = d3.select(".yText");
 
-    chartGroup.append("text")
-    .attr("transform", `translate(${width / 2}, ${height + margin.top + 20})`)
-        .attr("text-anchor", "middle")
-        .attr("font-size", "14px")
-        .attr("font-weight", "bold")
-        .attr("fill", "black")
-        .text("In Poverty (%)");
+function yTextRefresh() {
+	yText.attr(
+		"transform",
+		"translate(" + leftTextX + ", " + leftTextY + ")rotate(-90)"
+	);
+}
+yTextRefresh();
 
-    chartGroup.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - (margin.left / 2))
-        .attr("x", 0 - (height / 2))
-        .attr("text-anchor", "middle")
-        .attr("font-size", "14px")
-        .attr("font-weight", "bold")
-        .attr("fill", "black")
-        .text("Lacks Healthcare (%)");
+// 1. Obesity
+yText
+	.append("text")
+	.attr("y", -26)
+	.attr("data-name", "obesity")
+	.attr("data-axis", "y")
+	.attr("class", "aText active y")
+	.text("Obese (%)");
 
-    var elemEnter = chartGroup.selectAll("circle")
-        .data(censusData)
-        .enter()
-        .append("g")
+// 2. Smokes
+yText
+	.append("text")
+	.attr("x", 0)
+	.attr("data-name", "smokes")
+	.attr("data-axis", "y")
+	.attr("class", "aText inactive y")
+	.text("Smokes (%)");
 
-    var circlesGroup = elemEnter.append("circle")
-        .attr("cx", d => xLinearScale(d.poverty))
-        .attr("cy", d => yLinearScale(d.healthcare))
-        .attr("r", 10)
-        .attr("fill", "lightblue")
-        .attr("stroke", "black")
+// 3. Lacks Healthcare
+yText
+	.append("text")
+	.attr("y", 26)
+	.attr("data-name", "healthcare")
+	.attr("data-axis", "y")
+	.attr("class", "aText inactive y")
+	.text("Lacks Healthcare (%)");
 
-    elemEnter.append("text")
-        .attr("dx", d => xLinearScale(d.poverty) - 6)
-        .attr("dy", d => yLinearScale(d.healthcare) + 4)
-        .attr("font-size", ".5em")
-        .text(d => d.abbr);
-
-    var toolTip = d3.tip()
-        .attr("class", "tooltip")
-        .offset([80, -60])
-        .html(function(d) {
-            return(`${d.state}<br/>Healthcare: ${d.healthcare}<br/>Poverty: ${d.poverty}`);
-        });
-
-    circlesGroup.call(toolTip);
-
-    circlesGroup.on("mouseover", function(d) {
-        toolTip.show(d, this);
-    })
-        .on("mouseout", function(d) {
-            toolTip.hide(d);
-        });
-
-}).catch(function(error) {
-    console.log(error);
+// Import and visualize data
+d3.csv("assets/data/data.csv").then(function (data) {
+	visualize(data);
 });
+
+// Write visualization function
+function visualize(censusData) {
+	var curX = "poverty";
+	var curY = "obesity";
+
+	var xMin;
+	var xMax;
+	var yMin;
+	var yMax;
+
+	var toolTip = d3
+		.tip()
+		.attr("class", "d3-tip")
+		.offset([40, -60])
+		.html(function (d) {
+
+			var theX;
+			// get state name
+			var theState = "<div>" + d.state + "</div>";
+			// get y value's key and value
+			var theY = "<div>" + curY + ": " + d[curY] + "%</div>";
+			// If poverty
+			if (curX === "poverty") {
+				theX = "<div>" + curX + ": " + d[curX] + "%</div>";
+			} else {
+				theX = "<div>" +
+					curX +
+					": " +
+					parseFloat(d[curX]).toLocaleString("en") +
+					"</div>";
+			}
+			return theState + theX + theY;
+		});
+
+	svg.call(toolTip);
+
+	function xMinMax() {
+		// min 
+		xMin = d3.min(theData, function (d) {
+			return parseFloat(d[curX]) * 0.90;
+		});
+
+		// max
+		xMax = d3.max(theData, function (d) {
+			return parseFloat(d[curX]) * 1.10;
+		});
+	}
+
+	function yMinMax() {
+		// min
+		yMin = d3.min(theData, function (d) {
+			return parseFloat(d[curY]) * 0.90;
+		});
+
+		// max
+		yMax = d3.max(theData, function (d) {
+			return parseFloat(d[curY]) * 1.10;
+		});
+	}
+
+	function labelChange(axis, clickedText) {
+		d3
+			.selectAll(".aText")
+			.filter("." + axis)
+			.filter(".active")
+			.classed("active", false)
+			.classed("inactive", true);
+
+		clickedText.classed("inactive", false).classed("active", true);
+	}
+
+	// instantiate the plot
+	xMinMax();
+	yMinMax();
+
+	var xScale = d3
+		.scaleLinear()
+		.domain([xMin, xMax])
+		.range([margin + labelArea, width - margin]);
+	var yScale = d3
+		.scaleLinear()
+		.domain([yMin, yMax])
+		.range([height - margin - labelArea, margin]);
+
+	var xAxis = d3.axisBottom(xScale);
+	var yAxis = d3.axisLeft(yScale);
+
+	function tickCount() {
+		if (width <= 500) {
+			xAxis.ticks(5);
+			yAxis.ticks(5);
+		} else {
+			xAxis.ticks(10);
+			yAxis.ticks(10);
+		}
+	}
+	tickCount();
+
+	svg
+		.append("g")
+		.call(xAxis)
+		.attr("class", "xAxis")
+		.attr("transform", "translate(0," + (height - margin - labelArea) + ")");
+	svg
+		.append("g")
+		.call(yAxis)
+		.attr("class", "yAxis")
+		.attr("transform", "translate(" + (margin + labelArea) + ", 0)");
+
+	var theCircles = svg.selectAll("g theCircles").data(theData).enter();
+
+	theCircles
+		.append("circle")
+		.attr("cx", function (d) {
+			return xScale(d[curX]);
+		})
+		.attr("cy", function (d) {
+			return yScale(d[curY]);
+		})
+		.attr("r", circRadius)
+		.attr("class", function (d) {
+			return "stateCircle " + d.abbr;
+		})
+		.on("mouseover", function (d) {
+			// show tooltip
+			toolTip.show(d, this);
+			// highlight the state marker border
+			d3.select(this).style("stroke", "#323232");
+		})
+		.on("mouseout", function (d) {
+			// hide tooltip
+			toolTip.hide(d);
+			// remove highlight
+			d3.select(this).style("stroke", "#e3e3e3");
+		});
+
+	theCircles
+		.append("text")
+		.text(function (d) {
+			return d.abbr;
+		})
+		.attr("dx", function (d) {
+			return xScale(d[curX]);
+		})
+		.attr("dy", function (d) {
+			return yScale(d[curY]) + circRadius / 2.5;
+		})
+		.attr("font-size", circRadius)
+		.attr("class", "stateText")
+		.on("mouseover", function (d) {
+			// show tooltip
+			toolTip.show(d);
+			// highlight the state marker border
+			d3.select("." + d.abbr).style("stroke", "#323232");
+		})
+		.on("mouseout", function (d) {
+			// hide tooltip
+			toolTip.hide(d);
+			// remove highlight
+			d3.select("." + d.abbr).style("stroke", "#e3e3e3");
+		});
+
+	// dynamic event listener
+	d3.selectAll(".aText").on("click", function () {
+		var self = d3.select(this);
+
+		if (self.classed("inactive")) {
+			var axis = self.attr("data-axis");
+			var name = self.attr("data-name");
+
+			if (axis === "x") {
+				curX = name;
+
+				xMinMax();
+
+				xScale.domain([xMin, xMax]);
+
+				svg.select(".xAxis").transition().duration(300).call(xAxis);
+
+				d3.selectAll("circle").each(function () {
+					d3
+						.select(this)
+						.transition()
+						.attr("cx", function (d) {
+							return xScale(d[curX]);
+						})
+						.duration(300);
+				});
+
+				d3.selectAll(".stateText").each(function () {
+					d3
+						.select(this)
+						.transition()
+						.attr("dx", function (d) {
+							return xScale(d[curX]);
+						})
+						.duration(300);
+				});
+
+				labelChange(axis, self);
+			} else {
+				curY = name;
+
+				yMinMax();
+
+				yScale.domain([yMin, yMax]);
+
+				svg.select(".yAxis").transition().duration(300).call(yAxis);
+
+				d3.selectAll("circle").each(function () {
+					d3
+						.select(this)
+						.transition()
+						.attr("cy", function (d) {
+							return yScale(d[curY]);
+						})
+						.duration(300);
+				});
+
+				d3.selectAll(".stateText").each(function () {
+					d3
+						.select(this)
+						.transition()
+						.attr("dy", function (d) {
+							return yScale(d[curY]) + circRadius / 3;
+						})
+						.duration(300);
+				});
+
+				labelChange(axis, self);
+			}
+		}
+	});
+
+	// make responsive for mobile
+	d3.select(window).on("resize", resize);
+
+	function resize() {
+		width = parseInt(d3.select("#scatter").style("width"));
+		height = width - width / 3.9;
+		leftTextY = (height + labelArea) / 2 - labelArea;
+
+		svg.attr("width", width).attr("height", height);
+
+		xScale.range([margin + labelArea, width - margin]);
+		yScale.range([height - margin - labelArea, margin]);
+
+		svg
+			.select(".xAxis")
+			.call(xAxis)
+			.attr("transform", "translate(0," + (height - margin - labelArea) + ")");
+
+		svg.select(".yAxis").call(yAxis);
+
+		tickCount();
+
+		xTextRefresh();
+		yTextRefresh();
+
+		crGet();
+
+		d3
+			.selectAll("circle")
+			.attr("cy", function (d) {
+				return yScale(d[curY]);
+			})
+			.attr("cx", function (d) {
+				return xScale(d[curX]);
+			})
+			.attr("r", function () {
+				return circRadius;
+			});
+
+		d3
+			.selectAll(".stateText")
+			.attr("dy", function (d) {
+				return yScale(d[curY]) + circRadius / 3;
+			})
+			.attr("dx", function (d) {
+				return xScale(d[curX]);
+			})
+			.attr("r", circRadius / 3);
+	}
+}
