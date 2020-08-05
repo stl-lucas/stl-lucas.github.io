@@ -1,0 +1,63 @@
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	background-color: lightgrey;
+}
+
+#calculator {
+	width: 220px;
+	height: 320px;
+	background-color: black;
+	padding-top: 10px;
+	border-radius: 5px;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+}
+
+#output {
+	text-align: right;
+	height: 50px;
+	margin: 0 10px;
+	background-color: slategray;
+}
+
+#output-value {
+	margin: 0px;
+	padding: 5px;
+	font-size: 40px;
+	color: white;
+	font-weight: 50;
+}
+
+#keyboard {
+	height: 250px;
+	margin: 10px;
+}
+
+.non-operator,
+.operator,
+.number {
+	width: 50px;
+	height: 50px;
+	margin: 0px;
+	float: left;
+	font-weight: bold;
+	font-size: 15px;
+}
+
+.operator {
+	background-color: orange;
+	color: white;
+}
+
+.number {
+	background-color: lightgray;
+	color: black;
+}
+
+.large-number {
+	width: 100px;
+	border-bottom-left-radius: 5px;
+}
+
+.equals {
+	border-bottom-right-radius: 5px;
+}
